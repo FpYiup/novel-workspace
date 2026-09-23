@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Novel Workspace</title>
+<style>
+:root{
+  --bg:#f5f3ef;
+  --card:#fffdf9;
+  --text:#292723;
+  --muted:#8a847c;
+  --line:#ded8cf;
+  --accent:#6f667f;
+  --accent-soft:#ece8f1;
+  --green:#617765;
+  --yellow:#9b8352;
+  --red:#9a6868;
+  --shadow:0 8px 30px rgba(45,39,31,.07);
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",Meiryo,sans-serif;
+  line-height:1.6;
+}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:900px;margin:0 auto;padding:28px 18px 60px}
+header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:28px}
+.brand{letter-spacing:.12em;font-size:12px;color:var(--muted);font-weight:700}
+h1{font-family:Georgia,"Times New Roman",serif;font-size:32px;font-weight:500;margin:4px 0}
+.header-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{
+  border:1px solid var(--line);background:var(--card);color:var(--text);
+  border-radius:10px;padding:9px 13px;
+}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.danger{color:var(--red)}
+.grid{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:16px;
+  padding:20px;box-shadow:var(--shadow);
+}
+.full{grid-column:1/-1}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.section-title h2{font-size:15px;margin:0;letter-spacing:.06em}
+.small{font-size:12px;color:var(--muted)}
+.progress-head{display:flex;justify-content:space-between;align-items:end}
+.progress-num{font-size:38px;font-weight:600;line-height:1}
+.progress-bar{height:12px;background:#e7e2da;border-radius:99px;overflow:hidden;margin:14px 0 16px}
+.progress-fill{height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .25s}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.stat{padding:10px 8px;border:1px solid var(--line);border-radius:10px;text-align:center}
+.stat strong{display:block;font-size:20px}.stat span{font-size:11px;color:var(--muted)}
+.scene-list{display:grid;gap:10px}
+.scene{
+  border:1px solid var(--line);border-radius:12px;padding:13px 14px;
+  display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start;
+}
+.scene:hover{border-color:#c9c0d3}
+.scene-check{width:21px;height:21px;margin-top:3px}
+.scene-title{font-weight:600}
+.scene-meta{font-size:12px;color:var(--muted);margin-top:3px}
+.scene-actions{display:flex;gap:5px;align-items:center}
+.icon-btn{border:0;background:transparent;padding:4px;color:var(--muted)}
+.badge{font-size:11px;padding:3px 8px;border-radius:99px;white-space:nowrap}
+.badge.done{background:#e5eee7;color:var(--green)}
+.badge.writing{background:#eeeaf4;color:var(--accent)}
+.badge.idea{background:#f3eddf;color:var(--yellow)}
+.badge.todo{background:#eeeae4;color:#777168}
+.empty{text-align:center;color:var(--muted);padding:25px 10px}
+.todo-list{display:grid;gap:8px}
+.todo{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #eee9e2}
+.todo:last-child{border-bottom:0}
+.todo input{margin-top:5px}
+.todo.done label{text-decoration:line-through;color:var(--muted)}
+.todo-date{font-size:11px;color:var(--muted);display:block}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px}
+input,textarea,select{
+  width:100%;border:1px solid var(--line);background:#fff;border-radius:9px;
+  padding:10px;color:var(--text);outline:none;
+}
+textarea{min-height:100px;resize:vertical}
+input:focus,textarea:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.modal-backdrop{
+  position:fixed;inset:0;background:rgba(30,27,24,.38);display:none;
+  align-items:center;justify-content:center;padding:18px;z-index:10;
+}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--card);width:min(620px,100%);max-height:90vh;overflow:auto;border-radius:18px;padding:22px}
+.modal h2{margin:0 0 18px;font-size:20px}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.field{margin-bottom:13px}
+.settings-note{font-size:12px;color:var(--muted);background:#f3f0ea;padding:10px;border-radius:9px}
+.log-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.log-summary>div{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#faf8f4}
+.log-summary strong{font-size:25px;margin:0 4px 0 8px}
+.log-summary span:last-child{font-size:12px;color:var(--muted)}
+.chart-wrap{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff}
+.chart-title{display:flex;justify-content:space-between;margin-bottom:10px;font-size:13px;font-weight:600}
+.writing-chart{height:180px;display:flex;align-items:flex-end;gap:6px;padding:8px 2px 0;border-bottom:1px solid var(--line)}
+.chart-day{height:100%;flex:1;min-width:0;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:5px}
+.chart-value{font-size:9px;color:var(--muted);height:14px;white-space:nowrap}
+.chart-bar{width:100%;max-width:30px;min-height:2px;background:var(--accent);border-radius:5px 5px 0 0}
+.chart-date{font-size:9px;color:var(--muted);white-space:nowrap}
+.log-list{display:grid;gap:7px;margin-top:12px}
+.log-row{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:9px 11px;border-bottom:1px solid #eee9e2}
+.log-row strong{font-size:14px}.log-row small{color:var(--muted);display:block}
+@media(max-width:700px){.log-summary{grid-template-columns:1fr}.writing-chart{gap:3px}.chart-value,.chart-date{font-size:8px}}
+@media(max-width:700px){
+  .app{padding:20px 12px 45px}
+  header{display:block}
+  .header-actions{margin-top:12px}
+  .grid{grid-template-columns:1fr}
+  .full{grid-column:auto}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .scene{grid-template-columns:auto 1fr}
+  .scene-actions{grid-column:2;justify-content:flex-start}
+  h1{font-size:28px}
+}
+</style>
+
+<style>
+.backup-panel{margin-top:32px;padding:24px;border:1px solid rgba(80,55,75,.14);border-radius:20px;background:rgba(255,255,255,.72);box-shadow:0 8px 28px rgba(70,45,65,.06)}
+.section-title-row{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.section-title-row h2{margin:.2rem 0 0}
+.save-dot{font-size:18px;color:#9a8c98;transition:color .2s ease}
+.save-dot.saved{color:#78a889}.save-dot.saving{color:#d5a15c}
+.backup-status{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
+.backup-status>div{padding:14px 16px;border-radius:14px;background:#faf7fa}
+.status-label{display:block;font-size:12px;opacity:.65;margin-bottom:5px}
+.backup-status strong{display:block;font-size:13px;font-weight:600}
+.backup-actions{display:flex;flex-wrap:wrap;gap:10px}
+.backup-actions button{border:0;border-radius:999px;padding:11px 16px;cursor:pointer;font:inherit}
+.primary-btn{background:#493b48;color:#fff}.secondary-btn{background:#eee8ed;color:#493b48}
+.backup-note{margin:14px 0 0;font-size:12px;line-height:1.7;opacity:.7}
+@media (max-width:600px){.backup-panel{padding:18px}.backup-status{grid-template-columns:1fr}.backup-actions button{width:100%}}
+</style>
+
+</head>
+<body>
+<div class="app" id="app">
+<header>
+  <div>
+    <div class="brand">NOVEL WORKSPACE</div>
+    <h1 id="workTitle">新しい原稿</h1>
+    <div class="small">ページ数ではなく、「書きたいこと」で進捗を管理する。</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn" id="editWorkBtn">作品設定</button>
+    <button class="btn" id="exportBtn">バックアップ</button>
+    <label class="btn" style="cursor:pointer">復元<input id="importInput" type="file" accept=".json" hidden></label>
+  </div>
+</header>
+
+<div class="grid">
+  <section class="card">
+    <div class="progress-head">
+      <div>
+        <div class="small">作品全体の進捗</div>
+        <div class="small" id="progressDetail">0 / 0 シーン完成</div>
+      </div>
+      <div class="progress-num" id="progressNum">0%</div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="stats">
+      <div class="stat"><strong id="doneCount">0</strong><span>完成</span></div>
+      <div class="stat"><strong id="writingCount">0</strong><span>執筆中</span></div>
+      <div class="stat"><strong id="ideaCount">0</strong><span>構想中</span></div>
+      <div class="stat"><strong id="todoCount">0</strong><span>未着手</span></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="section-title"><h2>今日やること</h2><button class="btn primary" id="addTodoBtn">＋ 追加</button></div>
+    <div class="todo-list" id="todayList"></div>
+  </section>
+
+  <section class="card full">
+    <div class="section-title">
+      <h2>SCENES</h2>
+      <button class="btn primary" id="addSceneBtn">＋ シーンを追加</button>
+    </div>
+    <div class="scene-list" id="sceneList"></div>
+  </section>
+
+  <section class="card full">
+    <div class="section-title"><h2>執筆ログ</h2><button class="btn primary" id="addLogBtn">＋ 今日の記録</button></div>
+    <div class="log-summary">
+      <div><span class="small">今日</span><strong id="todayChars">0</strong><span>字</span></div>
+      <div><span class="small">今週</span><strong id="weekChars">0</strong><span>字</span></div>
+      <div><span class="small">累計</span><strong id="totalChars">0</strong><span>字</span></div>
+    </div>
+    <div class="chart-wrap"><div class="chart-title"><span>直近14日の執筆量</span><span class="small">文字数 / 日</span></div><div id="writingChart" class="writing-chart"></div></div>
+    <div class="log-list" id="logList"></div>
+  </section>
+  <section class="card full">
+    <div class="section-title"><h2>予定</h2><span class="small">時間ではなく「何を進めるか」で管理</span></div>
+    <div class="todo-list" id="scheduleList"></div>
+  </section>
+</div>
+</div>
+
+<div class="modal-backdrop" id="sceneModal">
+  <div class="modal">
+    <h2 id="sceneModalTitle">シーンを追加</h2>
+    <form id="sceneForm">
+      <input type="hidden" id="sceneId">
+      <div class="field"><label>シーン名</label><input id="sceneName" required placeholder="例：夕食"></div>
+      <div class="field"><label>このシーンで書きたいこと</label><textarea id="sceneNote" placeholder="例：龍が楽の疲れに気づく。仕事の話をする。"></textarea></div>
+      <div class="field">
+        <label>状態</label>
+        <select id="sceneStatus">
+          <option value="todo">未着手</option>
+          <option value="idea">構想中</option>
+          <option value="writing">執筆中</option>
+          <option value="done">完成</option>
+        </select>
+      </div>
+      <div class="modal-actions"><button type="button" class="btn" data-close="sceneModal">キャンセル</button><button class="btn primary">保存</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="workModal">
+  <div class="modal">
+    <h2>作品設定</h2>
+    <form id="workForm">
+      <div class="field"><label>作品タイトル</label><input id="workName" required></div>
+      <div class="field"><label>メモ</label><textarea id="workMemo" placeholder="作品全体のメモ、テーマ、目標など"></textarea></div>
+      <div class="settings-note">データはこのブラウザに自動保存されます。端末間同期はまだ行いません。定期的に「バックアップ」でJSONを保存しておくと安心です。</div>
+      <div class="modal-actions"><button type="button" class="btn" data-close="workModal">キャンセル</button><button class="btn primary">保存</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="logModal"><div class="modal">
+<h2>執筆ログ</h2><form id="logForm">
+<div class="field"><label>日付</label><input id="logDate" type="date" required></div>
+<div class="field"><label>今日書いた文字数</label><input id="logChars" type="number" min="0" step="1" required placeholder="例：1250"></div>
+<div class="field"><label>メモ（任意）</label><textarea id="logMemo" placeholder="例：夕食シーンを1200字くらい進めた。"></textarea></div>
+<div class="modal-actions"><button type="button" class="btn" data-close="logModal">キャンセル</button><button class="btn primary">保存</button></div>
+</form></div></div>
+<div class="modal-backdrop" id="todoModal">
+  <div class="modal">
+    <h2>予定を追加</h2>
+    <form id="todoForm">
+      <div class="field"><label>やること</label><input id="todoText" required placeholder="例：夕食シーンの続きを書く"></div>
+      <div class="field"><label>日付</label><input id="todoDate" type="date" required></div>
+      <div class="modal-actions"><button type="button" class="btn" data-close="todoModal">キャンセル</button><button class="btn primary">追加</button></div>
+    </form>
+  </div>
+</div>
+
+<script>
+const KEY = "novelWorkspace_v1";
+const defaultState = {
+  work:{title:"新しい原稿",memo:""},
+  scenes:[],
+  todos:[],
+  logs:[],
+  history:[]
+};
+let state = load();
+
+function load(){
+  try{
+    const raw=localStorage.getItem(KEY);
+    const loaded = raw ? {...defaultState,...JSON.parse(raw)} : structuredClone(defaultState);
+    loaded.logs = Array.isArray(loaded.logs) ? loaded.logs : [];
+    return loaded;
+  }catch(e){ return structuredClone(defaultState); }
+}
+function save(){
+  localStorage.setItem(KEY,JSON.stringify(state));
+}
+function today(){
+  const d=new Date();
+  return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+}
+function esc(s){
+  return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+function statusLabel(s){return {todo:"未着手",idea:"構想中",writing:"執筆中",done:"完成"}[s]||"未着手";}
+function calcProgress(){
+  const weights={todo:0,idea:.2,writing:.5,done:1};
+  if(!state.scenes.length)return 0;
+  return Math.round(state.scenes.reduce((a,s)=>a+(weights[s.status]??0),0)/state.scenes.length*100);
+}
+function render(){
+  document.getElementById("workTitle").textContent=state.work.title||"新しい原稿";
+  const p=calcProgress();
+  document.getElementById("progressNum").textContent=p+"%";
+  document.getElementById("progressFill").style.width=p+"%";
+  const done=state.scenes.filter(s=>s.status==="done").length;
+  document.getElementById("progressDetail").textContent=`${done} / ${state.scenes.length} シーン完成`;
+  for(const [id,status] of [["doneCount","done"],["writingCount","writing"],["ideaCount","idea"],["todoCount","todo"]]){
+    document.getElementById(id).textContent=state.scenes.filter(s=>s.status===status).length;
+  }
+  renderScenes();
+  renderTodos();
+  renderSchedule();
+  renderLogs();
+}
+function renderScenes(){
+  const el=document.getElementById("sceneList");
+  if(!state.scenes.length){el.innerHTML='<div class="empty">まだシーンがありません。<br>「＋ シーンを追加」から、書きたい場面を登録してみよう。</div>';return;}
+  el.innerHTML=state.scenes.map(s=>`
+    <article class="scene">
+      <input class="scene-check" type="checkbox" ${s.status==="done"?"checked":""} data-complete="${esc(s.id)}" aria-label="${esc(s.name)}を完成にする">
+      <div>
+        <div class="scene-title">${esc(s.name)}</div>
+        ${s.note?`<div class="scene-meta">${esc(s.note).replace(/\n/g,"<br>")}</div>`:""}
+        <div style="margin-top:7px"><span class="badge ${s.status}">${statusLabel(s.status)}</span></div>
+      </div>
+      <div class="scene-actions">
+        <button class="icon-btn" data-edit="${esc(s.id)}">編集</button>
+        <button class="icon-btn" data-delete="${esc(s.id)}">削除</button>
+      </div>
+    </article>`).join("");
+  el.querySelectorAll("[data-complete]").forEach(x=>x.addEventListener("change",()=>{
+    const s=state.scenes.find(v=>v.id===x.dataset.complete);
+    if(s){s.status=x.checked?"done":"writing"; save(); snapshot(); render();}
+  }));
+  el.querySelectorAll("[data-edit]").forEach(x=>x.addEventListener("click",()=>openScene(x.dataset.edit)));
+  el.querySelectorAll("[data-delete]").forEach(x=>x.addEventListener("click",()=>{
+    if(confirm("このシーンを削除しますか？")){state.scenes=state.scenes.filter(s=>s.id!==x.dataset.delete);save();snapshot();render();}
+  }));
+}
+function renderTodos(){
+  const list=state.todos.filter(t=>t.date===today());
+  const el=document.getElementById("todayList");
+  el.innerHTML=list.length?list.map(todoHTML).join(""):'<div class="empty">今日はまだ予定なし。</div>';
+  bindTodoChecks(el);
+}
+function renderSchedule(){
+  const el=document.getElementById("scheduleList");
+  const sorted=[...state.todos].sort((a,b)=>a.date.localeCompare(b.date));
+  el.innerHTML=sorted.length?sorted.map(todoHTML).join(""):'<div class="empty">予定を追加すると、ここに表示されます。</div>';
+  bindTodoChecks(el);
+}
+function todoHTML(t){
+  return `<div class="todo ${t.done?"done":""}">
+    <input type="checkbox" ${t.done?"checked":""} data-todo="${esc(t.id)}">
+    <label><span>${esc(t.text)}</span><span class="todo-date">${esc(t.date)}</span></label>
+    <button class="icon-btn" data-del-todo="${esc(t.id)}">削除</button>
+  </div>`;
+}
+function bindTodoChecks(el){
+  el.querySelectorAll("[data-todo]").forEach(x=>x.addEventListener("change",()=>{
+    const t=state.todos.find(v=>v.id===x.dataset.todo); if(t){t.done=x.checked;save();render();}
+  }));
+  el.querySelectorAll("[data-del-todo]").forEach(x=>x.addEventListener("click",()=>{
+    state.todos=state.todos.filter(t=>t.id!==x.dataset.delTodo);save();render();
+  }));
+}
+
+function renderLogs(){
+  const logs=[...state.logs].sort((a,b)=>b.date.localeCompare(a.date));
+  const t=today(), now=new Date(t+"T00:00:00");
+  const todayChars=state.logs.filter(x=>x.date===t).reduce((a,x)=>a+Number(x.chars||0),0);
+  const day=now.getDay(), monday=new Date(now);
+  monday.setDate(now.getDate()-(day===0?6:day-1));
+  const weekChars=state.logs.filter(x=>{const d=new Date(x.date+"T00:00:00");return d>=monday&&d<=now;}).reduce((a,x)=>a+Number(x.chars||0),0);
+  const totalChars=state.logs.reduce((a,x)=>a+Number(x.chars||0),0);
+  document.getElementById("todayChars").textContent=todayChars.toLocaleString();
+  document.getElementById("weekChars").textContent=weekChars.toLocaleString();
+  document.getElementById("totalChars").textContent=totalChars.toLocaleString();
+  const days=[];
+  for(let i=13;i>=0;i--){const d=new Date(now);d.setDate(now.getDate()-i);const key=d.toISOString().slice(0,10);
+    const chars=state.logs.filter(x=>x.date===key).reduce((a,x)=>a+Number(x.chars||0),0);
+    days.push({key,chars,label:`${d.getMonth()+1}/${d.getDate()}`});}
+  const max=Math.max(...days.map(x=>x.chars),1);
+  document.getElementById("writingChart").innerHTML=days.map(x=>`<div class="chart-day" title="${esc(x.label)}：${x.chars.toLocaleString()}字"><div class="chart-value">${x.chars?x.chars.toLocaleString():""}</div><div class="chart-bar" style="height:${Math.max(2,x.chars/max*105)}px"></div><div class="chart-date">${esc(x.label)}</div></div>`).join("");
+  const list=document.getElementById("logList");
+  list.innerHTML=logs.slice(0,10).map(x=>`<div class="log-row"><div><strong>${esc(x.date.slice(5).replace("-","/"))}</strong>${x.memo?`<small>${esc(x.memo)}</small>`:""}</div><strong>${Number(x.chars||0).toLocaleString()}字</strong><button class="icon-btn" data-del-log="${esc(x.id)}">削除</button></div>`).join("")||'<div class="empty">まだ執筆ログがありません。</div>';
+  list.querySelectorAll("[data-del-log]").forEach(b=>b.addEventListener("click",()=>{state.logs=state.logs.filter(x=>x.id!==b.dataset.delLog);save();render();}));
+}
+function openModal(id){document.getElementById(id).classList.add("open")}
+function closeModal(id){document.getElementById(id).classList.remove("open")}
+function openScene(id=null){
+  document.getElementById("sceneForm").reset();
+  document.getElementById("sceneId").value="";
+  document.getElementById("sceneModalTitle").textContent=id?"シーンを編集":"シーンを追加";
+  if(id){
+    const s=state.scenes.find(x=>x.id===id);
+    if(s){
+      document.getElementById("sceneId").value=s.id;
+      document.getElementById("sceneName").value=s.name;
+      document.getElementById("sceneNote").value=s.note||"";
+      document.getElementById("sceneStatus").value=s.status;
+    }
+  }
+  openModal("sceneModal");
+}
+function snapshot(){
+  const p=calcProgress();
+  const d=today();
+  const last=state.history[state.history.length-1];
+  if(!last || last.date!==d){
+    state.history.push({date:d,progress:p});
+  }else{last.progress=p;}
+  save();
+}
+document.getElementById("addSceneBtn").addEventListener("click",()=>openScene());
+document.getElementById("sceneForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const id=document.getElementById("sceneId").value;
+  const item={
+    id:id||crypto.randomUUID(),
+    name:document.getElementById("sceneName").value.trim(),
+    note:document.getElementById("sceneNote").value.trim(),
+    status:document.getElementById("sceneStatus").value
+  };
+  if(id) state.scenes=state.scenes.map(s=>s.id===id?item:s); else state.scenes.push(item);
+  save();snapshot();closeModal("sceneModal");render();
+});
+document.getElementById("editWorkBtn").addEventListener("click",()=>{
+  document.getElementById("workName").value=state.work.title;
+  document.getElementById("workMemo").value=state.work.memo;
+  openModal("workModal");
+});
+document.getElementById("workForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  state.work.title=document.getElementById("workName").value.trim()||"新しい原稿";
+  state.work.memo=document.getElementById("workMemo").value.trim();
+  save();closeModal("workModal");render();
+});
+document.getElementById("addTodoBtn").addEventListener("click",()=>{
+  document.getElementById("todoForm").reset();
+  document.getElementById("todoDate").value=today();
+  openModal("todoModal");
+});
+document.getElementById("todoForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  state.todos.push({
+    id:crypto.randomUUID(),
+    text:document.getElementById("todoText").value.trim(),
+    date:document.getElementById("todoDate").value,
+    done:false
+  });
+  save();closeModal("todoModal");render();
+});
+document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",()=>closeModal(b.dataset.close)));
+document.querySelectorAll(".modal-backdrop").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("open")}));
+
+document.getElementById("addLogBtn").addEventListener("click",()=>{
+  document.getElementById("logForm").reset();
+  document.getElementById("logDate").value=today();
+  openModal("logModal");
+});
+document.getElementById("logForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const date=document.getElementById("logDate").value;
+  const chars=Math.max(0,Number(document.getElementById("logChars").value)||0);
+  const memo=document.getElementById("logMemo").value.trim();
+  const existing=state.logs.find(x=>x.date===date);
+  if(existing){existing.chars=chars;existing.memo=memo;}
+  else state.logs.push({id:crypto.randomUUID(),date,chars,memo});
+  save();closeModal("logModal");render();
+});
+document.getElementById("exportBtn").addEventListener("click",()=>{
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=`novel-workspace-backup-${today()}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+document.getElementById("importInput").addEventListener("change",async e=>{
+  const file=e.target.files[0]; if(!file)return;
+  try{
+    const imported=JSON.parse(await file.text());
+    if(!imported.work||!Array.isArray(imported.scenes)||!Array.isArray(imported.todos)||!Array.isArray(imported.logs))throw new Error();
+    state=imported;save();render();alert("バックアップを復元しました。");
+  }catch{alert("このファイルは読み込めませんでした。");}
+  e.target.value="";
+});
+snapshot();
+render();
+</script>
+
+<section class="backup-panel">
+  <div class="section-title-row">
+    <div>
+      <div class="eyebrow">DATA SAFETY</div>
+      <h2>データ保存</h2>
+    </div>
+    <span class="save-dot" id="saveDot" title="保存状態">●</span>
+  </div>
+  <div class="backup-status">
+    <div><span class="status-label">最終保存</span><strong id="lastSavedAt">まだ保存されていません</strong></div>
+    <div><span class="status-label">最終バックアップ</span><strong id="lastBackupAt">まだバックアップしていません</strong></div>
+  </div>
+  <div class="backup-actions">
+    <button type="button" class="primary-btn" id="backupBtn">📦 バックアップする</button>
+    <button type="button" class="secondary-btn" id="restoreBtn">🔄 バックアップから復元</button>
+    <input type="file" id="restoreFile" accept=".json,application/json" hidden>
+  </div>
+  <p class="backup-note">入力内容はこのブラウザに自動保存されます。バックアップすると、作品データをJSONファイルとして保存できます。ブラウザのデータを削除した場合に備えて、定期的にバックアップしてください。</p>
+</section>
+
+
+<script>
+(function(){
+  const STORAGE_KEY='novelWorkspaceData';
+  const SAVED_AT_KEY='novelWorkspaceLastSavedAt';
+  const BACKUP_AT_KEY='novelWorkspaceLastBackupAt';
+  const $=id=>document.getElementById(id);
+  const dot=$('saveDot'), saved=$('lastSavedAt'), backed=$('lastBackupAt');
+
+  function fmt(v){
+    if(!v)return'まだ記録されていません';
+    const d=new Date(v); if(Number.isNaN(d.getTime()))return'まだ記録されていません';
+    return d.toLocaleString('ja-JP',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  }
+  function status(){
+    if(saved)saved.textContent=fmt(localStorage.getItem(SAVED_AT_KEY));
+    if(backed)backed.textContent=fmt(localStorage.getItem(BACKUP_AT_KEY));
+  }
+  function state(s){
+    if(!dot)return;
+    dot.classList.remove('saved','saving');
+    if(s==='saved')dot.classList.add('saved');
+    if(s==='saving')dot.classList.add('saving');
+  }
+
+  const nativeSet=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(key,value){
+    nativeSet.call(this,key,value);
+    if(this===localStorage && key===STORAGE_KEY){
+      nativeSet.call(this,SAVED_AT_KEY,new Date().toISOString());
+      status(); state('saved');
+    }
+  };
+
+  function backup(){
+    const data={backupVersion:3,exportedAt:new Date().toISOString(),app:'NOVEL WORKSPACE',localStorage:{}};
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      if(k && (k===STORAGE_KEY || k.startsWith('novelWorkspace') || k.startsWith('novel-workspace')))
+        data.localStorage[k]=localStorage.getItem(k);
+    }
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob), d=new Date(), p=n=>String(n).padStart(2,'0');
+    const name=`novel-backup-${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}.json`;
+    const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    nativeSet.call(localStorage,BACKUP_AT_KEY,d.toISOString()); status(); state('saved');
+  }
+
+  function restore(){
+    const input=$('restoreFile'); input.click();
+  }
+
+  $('backupBtn')?.addEventListener('click',backup);
+  $('restoreBtn')?.addEventListener('click',restore);
+
+  $('restoreFile')?.addEventListener('change',e=>{
+    const file=e.target.files?.[0]; if(!file)return;
+    const reader=new FileReader();
+    reader.onload=()=>{
+      try{
+        const imported=JSON.parse(reader.result);
+        if(!imported || typeof imported!=='object' || !imported.localStorage || typeof imported.localStorage!=='object')throw new Error();
+        if(!confirm('バックアップからデータを復元します。\\n\\n現在のブラウザ保存データはバックアップ内容で上書きされます。\\n復元前に現在のデータをバックアップしておくことをおすすめします。\\n\\n復元しますか？'))return;
+        state('saving');
+        Object.entries(imported.localStorage).forEach(([k,v])=>nativeSet.call(localStorage,k,v));
+        nativeSet.call(localStorage,SAVED_AT_KEY,new Date().toISOString());
+        status(); state('saved');
+        alert('バックアップを復元しました。ページを再読み込みします。');
+        location.reload();
+      }catch(err){alert('このファイルは有効なバックアップとして読み込めませんでした。');}
+      finally{e.target.value='';}
+    };
+    reader.readAsText(file);
+  });
+
+  status(); state('saved');
+})();
+</script>
+
+</body>
+</html>
